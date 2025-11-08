@@ -18,7 +18,7 @@ operation = ''
 correct_answer = 0
 attempt = 0
 
-# Widgets
+# assingning widgets
 label = None
 entry = None
 button = None
