@@ -1,11 +1,13 @@
+#calling out the tk functions
 import tkinter as tk
 from tkinter import messagebox
 import random
 
+#begining the main code
 root = tk.Tk()
 root.title("Math Quiz")
 
-#  variables
+# listing variables
 score = 0
 question_count = 0
 min_num = 0
