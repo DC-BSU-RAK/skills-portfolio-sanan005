@@ -23,7 +23,7 @@ label = None
 entry = None
 button = None
 
-
+#assigning conditions
 def displayMenu():
     clear_screen()
     tk.Label(root, text="DIFFICULTY LEVEL\n1. Easy\n2. Moderate\n3. Advanced", font=("Arial", 12)).pack(pady=20)
