@@ -136,6 +136,6 @@ def submit_answer():
 def clear_screen():
     for widget in root.winfo_children():
         widget.destroy()
-
+# completing code 
 displayMenu()
 root.mainloop()
