@@ -1,13 +1,13 @@
-#calling out the tk functions
+#preliminary tkinter functions
 import tkinter as tk
 from tkinter import messagebox
 import random
 
-#begining the main code
+#initiating the code
 root = tk.Tk()
 root.title("Math Quiz")
 
-# listing variables
+#listing variables
 score = 0
 question_count = 0
 min_num = 0
@@ -18,7 +18,7 @@ operation = ''
 correct_answer = 0
 attempt = 0
 
-# assingning widgets
+#assingning widgets
 label = None
 entry = None
 button = None
@@ -108,7 +108,7 @@ def next_question():
         correct_answer = a + b
     else:
         if a < b:
-            a, b = b, a  #  avoid negative
+            a, b = b, a  #avoid negative
         correct_answer = a - b
     displayProblem()
 
