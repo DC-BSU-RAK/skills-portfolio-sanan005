@@ -2,36 +2,51 @@ import tkinter as tk
 import random
 import os
 
-# Path to the jokes file
-file_path = os.path.join("resources", "randomJokes.txt")
+#
+#joke path and codes
+base_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(base_dir, "resources", "randomJokes.txt")
 
-# Load all jokes at startup
+#all jokes relayed here
 jokes = []
+default_jokes = [
+    ("Why did the scarecrow win an award?", "Because he was outstanding in his field."),
+    ("Why don't scientists trust atoms?", "Because they make up everything."),
+    ("Why did the math book look sad?", "Because it had too many problems."),
+]
+
 try:
     with open(file_path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line or "?" not in line:
                 continue
-            
-            # Remove optional leading "- " or "-"
+
+            # stripping optional part
             line = line.lstrip("- ").lstrip("-").strip()
-            
-            # Split on the first "?" (handles no space after ? perfectly)
+
+            # Splitting
             parts = line.split("?", 1)
             if len(parts) != 2:
                 continue
-                
+
             setup = parts[0].strip() + "?"
             punchline = parts[1].strip()
-            
-            # Capitalize the punchline for classic joke style
+
+            # Capitalize the punchline 
             if punchline:
                 punchline = punchline[0].upper() + punchline[1:]
-            
+
             jokes.append((setup, punchline))
 except FileNotFoundError:
     jokes = []
+
+# fall back to a small set of built-in jokes 
+if not jokes:
+    jokes = default_jokes.copy()
+    using_fallback = True
+else:
+    using_fallback = False
 
 # GUI Setup
 root = tk.Tk()
