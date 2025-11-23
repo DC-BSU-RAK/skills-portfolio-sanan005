@@ -33,46 +33,60 @@ class Student:
         else:
             return "F"
 
-    def __str__(self):
-        return (f"Name: {self.name}\n"
-                f"Student Number: {self.code}\n"
-                f"Total Coursework Mark: {self.coursework_total()}/60\n"
-                f"Exam Mark: {self.exam}/100\n"
-                f"Overall Percentage: {self.overall_percentage()}%\n"
-                f"Grade: {self.grade()}\n")
-
-
 class StudentManagerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Student Manager")
-        self.root.geometry("500x600")
+        self.root.title("All Student Records")
+        self.root.geometry("800x600")
+        self.root.configure(bg="blue")  # Background like in image
 
-        self.students = []          # list of Student objects
+        self.students = []
         self.load_data()
 
-        # Text area for output
-        self.text = tk.Text(root, wrap=tk.WORD, state=tk.DISABLED, font=("Courier", 10))
-        self.text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        # Left frame for buttons
+        left_frame = tk.Frame(root, bg="blue", width=200)
+        left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
 
-        # Menu
-        menubar = tk.Menu(root)
-        root.config(menu=menubar)
+        buttons = [
+            ("View All Records", self.view_all),
+            ("Individual Record", self.view_individual),
+            ("Highest Mark", self.show_highest),
+            ("Lowest Mark", self.show_lowest),
+            ("Sort Records", self.sort_records),
+            ("Add Record", self.add_student),
+            ("Delete Record", self.delete_student),
+            ("Update Record", self.update_student),
+            # ("Chart", self.show_chart)  # If needed, but not in assignment
+        ]
 
-        file_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Menu", menu=file_menu)
+        for text, command in buttons:
+            btn = tk.Button(left_frame, text=text, command=command, bg="pink", fg="black", font=("Arial", 12), width=15)
+            btn.pack(pady=5)
 
-        file_menu.add_command(label="1. View all student records", command=self.view_all)
-        file_menu.add_command(label="2. View individual student record", command=self.view_individual)
-        file_menu.add_command(label="3. Show student with highest total score", command=self.show_highest)
-        file_menu.add_command(label="4. Show student with lowest total score", command=self.show_lowest)
-        file_menu.add_separator()
-        file_menu.add_command(label="5. Sort student records", command=self.sort_records)
-        file_menu.add_command(label="6. Add a student record", command=self.add_student)
-        file_menu.add_command(label="7. Delete a student record", command=self.delete_student)
-        file_menu.add_command(label="8. Update a student record", command=self.update_student)
-        file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=root.quit)
+        # Main frame for table
+        main_frame = tk.Frame(root)
+        main_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Treeview table
+        columns = ("Name", "ID", "Total Coursework", "Exam", "Overall %", "Grade")
+        self.tree = ttk.Treeview(main_frame, columns=columns, show="headings", height=20)
+        for col in columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=100, anchor=tk.CENTER)
+        self.tree.pack(fill=tk.BOTH, expand=True)
+
+        # Bottom labels for summary
+        self.summary_frame = tk.Frame(main_frame)
+        self.summary_frame.pack(fill=tk.X, pady=10)
+
+        self.num_students_label = tk.Label(self.summary_frame, text="No. Students: 0", font=("Arial", 12))
+        self.num_students_label.pack(side=tk.LEFT, padx=10)
+
+        self.avg_percentage_label = tk.Label(self.summary_frame, text="Average Percentage: 0%", font=("Arial", 12))
+        self.avg_percentage_label.pack(side=tk.LEFT, padx=10)
+
+        # Initial view
+        self.view_all()
 
     def load_data(self):
         self.students = []
@@ -99,34 +113,38 @@ class StudentManagerApp:
             for s in self.students:
                 f.write(f"{s.code},{s.name},{s.cw1},{s.cw2},{s.cw3},{s.exam}\n")
 
-    def clear_text(self):
-        self.text.configure(state=tk.NORMAL)
-        self.text.delete(1.0, tk.END)
-        self.text.configure(state=tk.DISABLED)
+    def clear_tree(self):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
 
-    def output(self, text):
-        self.text.configure(state=tk.NORMAL)
-        self.text.insert(tk.END, text + "\n")
-        self.text.configure(state=tk.DISABLED)
-        self.text.see(tk.END)
+    def insert_student(self, s):
+        self.tree.insert("", tk.END, values=(
+            s.name,
+            s.code,
+            f"{s.coursework_total()}/60",
+            f"{s.exam}/100",
+            f"{s.overall_percentage()}%",
+            s.grade()
+        ))
 
-    # ====================== MENU FUNCTIONS ======================
-
-    def view_all(self):
-        self.clear_text()
+    def update_summary(self):
         if not self.students:
-            self.output("No students loaded.")
+            self.num_students_label.config(text="No. Students: 0")
+            self.avg_percentage_label.config(text="Average Percentage: 0%")
             return
 
-        total_perc = 0
-        for s in self.students:
-            self.output(str(s))
-            self.output("-" * 40)
-            total_perc += s.overall_percentage()
-
+        total_perc = sum(s.overall_percentage() for s in self.students)
         avg = round(total_perc / len(self.students), 2)
-        self.output(f"Total students: {len(self.students)}")
-        self.output(f"Average percentage mark: {avg}%")
+        self.num_students_label.config(text=f"No. Students: {len(self.students)}")
+        self.avg_percentage_label.config(text=f"Average Percentage: {avg}%")
+
+    # ====================== BUTTON FUNCTIONS ======================
+
+    def view_all(self):
+        self.clear_tree()
+        for s in self.students:
+            self.insert_student(s)
+        self.update_summary()
 
     def view_individual(self):
         if not self.students:
@@ -143,26 +161,27 @@ class StudentManagerApp:
             messagebox.showerror("Not found", f"Student with code {code} not found.")
             return
 
-        self.clear_text()
-        self.output(str(student))
+        self.clear_tree()
+        self.insert_student(student)
+        self.update_summary()  # But summary for one?
 
     def show_highest(self):
         if not self.students:
             messagebox.showinfo("Info", "No students loaded.")
             return
         best = max(self.students, key=lambda s: s.overall_percentage())
-        self.clear_text()
-        self.output("=== STUDENT WITH HIGHEST OVERALL MARK ===\n")
-        self.output(str(best))
+        self.clear_tree()
+        self.insert_student(best)
+        self.update_summary()
 
     def show_lowest(self):
         if not self.students:
             messagebox.showinfo("Info", "No students loaded.")
             return
         worst = min(self.students, key=lambda s: s.overall_percentage())
-        self.clear_text()
-        self.output("=== STUDENT WITH LOWEST OVERALL MARK ===\n")
-        self.output(str(worst))
+        self.clear_tree()
+        self.insert_student(worst)
+        self.update_summary()
 
     def sort_records(self):
         if not self.students:
@@ -173,7 +192,7 @@ class StudentManagerApp:
         reverse = (choice == "yes")
 
         self.students.sort(key=lambda s: s.overall_percentage(), reverse=reverse)
-        self.save_data()           # optional: keep file sorted
+        self.save_data()
         self.view_all()
 
     def add_student(self):
@@ -237,7 +256,6 @@ class StudentManagerApp:
             messagebox.showerror("Error", "Student not found.")
             return
 
-        # Sub-menu for what to update
         options = ["Name", "Coursework 1", "Coursework 2", "Coursework 3", "Exam Mark"]
         choice = simpledialog.askstring("Update Field",
                                         f"What do you want to update for {student.name}?\n"
@@ -247,7 +265,6 @@ class StudentManagerApp:
             new = simpledialog.askstring("New Name", "Enter new name:", initialvalue=student.name)
             if new:
                 student.name = new.strip()
-
         elif choice == "Coursework 1":
             new = simpledialog.askinteger("Coursework 1", "New mark (0-20):", minvalue=0, maxvalue=20)
             if new is not None:
@@ -272,6 +289,9 @@ class StudentManagerApp:
         messagebox.showinfo("Success", "Record updated!")
         self.view_all()
 
+    # Optional chart if needed
+    # def show_chart(self):
+    #     messagebox.showinfo("Chart", "Chart functionality not implemented.")
 
 if __name__ == "__main__":
     root = tk.Tk()
