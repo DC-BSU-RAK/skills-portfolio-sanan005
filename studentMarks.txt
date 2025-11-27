@@ -1,0 +1,6 @@
+5
+8439,Jake Hobbs,10,11,10,43
+1234,Alice Smith,15,16,14,75
+5678,Bob Johnson,8,9,7,30
+9012,Carol Davis,18,19,20,90
+3456,David Wilson,12,13,11,50
